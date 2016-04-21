@@ -14,9 +14,8 @@ be used to generate documentation for reusable Lilypond libraries.
 
 **Contents**:
 
-.. contents::
-   :local:
-   :depth: 2
+.. toctree::
+   :maxdepth: 2
 
 Installation
 ============
