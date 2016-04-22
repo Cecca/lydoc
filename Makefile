@@ -26,7 +26,7 @@ parser: lydoc/lilyparser.py
 
 lydoc/lilyparser.py: lydoc/grammar.txt
 	echo "Generating parser from grammar file"
-	grako -m Lily -o lydoc/parser.py lydoc/grammar.txt
+	grako -m Lily -o lydoc/lilyparser.py lydoc/grammar.txt
 
 .PHONY: standalone
 ## Package the application in a standalone executable, with no dependencies
