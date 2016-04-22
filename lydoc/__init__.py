@@ -54,6 +54,7 @@ def main():
     docs = collector.parse(args.path, args.trace_parser)
 
     console.display(console.action("Rendering"), "documentation")
+
     try:
         out = renderer.render_template(docs, "markdown.")
     except TemplateNotFound as err:

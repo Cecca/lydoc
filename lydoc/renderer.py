@@ -9,6 +9,20 @@ JINJA_ENV = jinja2.Environment(
     loader=jinja2.PackageLoader('lydoc', 'templates'))
 
 
+def _build_templates_map():
+    m = {
+        "markdown.j2": ["md", "markdown", "mdown"]
+    }
+
+    tmap = dict()
+    for template, extensions in m.items():
+        for ext in extendsions:
+            tmap[ext] = template
+    return tmap
+
+TEMPLATES_MAP = _build_templates_map()
+
+
 def render_json(docs):
     """Represent each doc in docs as a json object, one per line"""
     return "\n".join([json.dumps(doc) for doc in docs]) + "\n"
