@@ -19,7 +19,8 @@ setup(
     packages=find_packages(exclude=['docs', 'tests*']),
     install_requires=[
         'jinja2',
-        'grako'
+        'grako',
+        'colorama'
     ],
     extras_require={
         'dev': ['pyinstaller'],

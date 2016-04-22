@@ -47,6 +47,6 @@ def main():
     # setup logging
     logging.basicConfig(level=args.loglevel)
 
-    console.display("Collecting documentation")
+    console.display(console.action("Collecting"), "documentation from files")
     docs = collector.parse(args.path, args.trace_parser)
     pprint.pprint(docs)

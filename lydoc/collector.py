@@ -2,6 +2,7 @@
 from Lilypond files and directories."""
 
 from lydoc.lilyparser import LilyParser, LilySemantics
+from . import console
 import re
 import os
 from grako.exceptions import FailedParse, FailedSemantics
@@ -138,7 +139,7 @@ def parse(target, trace=False, **kwargs):
 
     if os.path.isfile(target):
         if target.endswith(".ily") or target.endswith(".ly"):
-            logging.info("Parsing {}".format(target))
+            console.display(console.action("Parsing"), target)
             with open(target, "r", encoding="utf-8") as fp:
                 return parse(fp, trace, filename=target)
         else:
