@@ -1,11 +1,11 @@
 """Lydoc is a simple API documentation generator for lilypond."""
 
-from . import collector
-from . import console
+from . import collector, console, renderer
 import argparse
 import sys
 import logging
 import pprint
+import colorama
 
 
 def _cli_argument_parser():
@@ -40,6 +40,8 @@ def _cli_argument_parser():
 def main():
     """The main entry point of the program"""
 
+    colorama.init()
+
     # Parse command line arguments
     argp = _cli_argument_parser()
     args = argp.parse_args()
@@ -49,4 +51,7 @@ def main():
 
     console.display(console.action("Collecting"), "documentation from files")
     docs = collector.parse(args.path, args.trace_parser)
-    pprint.pprint(docs)
+
+    console.display(console.action("Rendering"), "documentation")
+    out = renderer.render_json(docs)
+    print(out)
