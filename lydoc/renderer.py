@@ -16,7 +16,7 @@ def _build_templates_map():
 
     tmap = dict()
     for template, extensions in m.items():
-        for ext in extendsions:
+        for ext in extensions:
             tmap[ext] = template
     return tmap
 
