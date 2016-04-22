@@ -1,6 +1,7 @@
 """Lydoc is a simple API documentation generator for lilypond."""
 
 from . import collector
+from . import console
 import argparse
 import sys
 import logging
@@ -20,7 +21,7 @@ def _cli_argument_parser():
         help='The output file. If not given, prints to standard output')
 
     argp.add_argument(
-        '--trace-parser', action='store_true',
+        '--trace-parser', action='store_true', dest='trace_parser',
         help='Print debug information from the parser')
 
     argp.add_argument(
@@ -46,5 +47,6 @@ def main():
     # setup logging
     logging.basicConfig(level=args.loglevel)
 
-    docs = collector.parse(args.path, args.trace)
-    pprint(docs)
+    console.display("Collecting documentation")
+    docs = collector.parse(args.path, args.trace_parser)
+    pprint.pprint(docs)
