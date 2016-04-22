@@ -27,7 +27,7 @@ setup(
     },
     entry_points = {
         'console_scripts': [
-            # TODO
+            'lydoc=lydoc:main'
         ]
     }
 )
