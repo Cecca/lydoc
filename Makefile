@@ -34,3 +34,8 @@ standalone: dist/lydoc.exe
 
 dist/lydoc.exe: *.py
 	pyinstaller --onefile --name lydoc.exe lydoc/__main__.py
+
+.PHONY: bumpversion
+## See scripts/bumpversion.sh
+bumpversion:
+	scripts/bumpversion.sh
