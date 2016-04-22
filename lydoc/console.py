@@ -5,12 +5,19 @@ the json representation of the documentation"""
 
 import sys
 from colorama import Fore, Back, Style
+import logging
+
 
 def action(string):
-    return "{color}{s}{reset}".format(
-        color=Fore.GREEN + Style.BRIGHT,
-        s=string,
-        reset=Style.RESET_ALL)
+    if sys.stderr.isatty():
+        return "{color}{s}{reset}".format(
+            color=Fore.GREEN + Style.BRIGHT,
+            s=string,
+            reset=Style.RESET_ALL)
+    else:
+        return string
+
 
 def display(*args):
     print(*args, file=sys.stderr)
+

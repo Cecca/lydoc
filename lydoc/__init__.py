@@ -6,6 +6,7 @@ import sys
 import logging
 import pprint
 import colorama
+from jinja2.exceptions import TemplateNotFound
 
 
 def _cli_argument_parser():
@@ -53,5 +54,11 @@ def main():
     docs = collector.parse(args.path, args.trace_parser)
 
     console.display(console.action("Rendering"), "documentation")
-    out = renderer.render_json(docs)
+    try:
+        out = renderer.render_template(docs, "markdown.")
+    except TemplateNotFound as err:
+        logging.error(
+            "Template `{}` not found. Available templates are: {}".format(
+                err.name, renderer.JINJA_ENV.list_templates()))
+        sys.exit(1)
     print(out)
