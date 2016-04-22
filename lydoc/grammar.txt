@@ -1,0 +1,105 @@
+
+@@comments :: /(?!%{!)%{(.|\s)*?%}/
+@@eol_comments :: /(?!%{)%.*?$/
+
+lilypond = { toplevel_element } $ ;
+
+toplevel_element = documentable_element
+                 | embedded_scheme
+                 | lilypond_block
+                 | token
+                 ;
+
+documentable_element = name_definition ;
+
+(*
+ * Identifiers
+ * ~~~~~~~~~~~
+ * This regular expression matches valid LilyPond identifiers. However,
+ * it does not represent all valid scheme symbol names. As of now (20/04/2016)
+ * this is not necessary. Maybe in the future it may be necessary to introduce
+ * a `scheme_symbol` rule.
+ *)
+
+identifier = /(?<![^\W\d])[^\W\d_]+([_-][^\W\d_]+)*(?![_-]?[^\W\d])/ ;
+
+(*
+ * Documentation comments
+ * ~~~~~~~~~~~~~~~~~~~~~~
+ *
+ * Documentation comments start with a `%{!` and end with a `%}`.
+ * In the pattern used here there is some sort of strange workaround:
+ * The closing `%}` is matched using a regular expression instead of a
+ * simple string token, because the latter doesn't work in practice.
+ *)
+doc_comment = ('%{!' ~ @:/((?!%})(.|\s))*/ /%}/) ~ ;
+
+name_definition =
+                  documentation:[doc_comment]
+                  name:identifier
+                  '='
+                ;
+
+(*
+ * Scheme code
+ * ~~~~~~~~~~~
+ *)
+
+embedded_scheme = '#' ( embedded_scheme_pre @:scheme embedded_scheme_post | scheme_parse_error ) ;
+
+embedded_scheme_pre = pre:() ;
+
+embedded_scheme_post = post:() ;
+
+(* Gives a hook to throw a meaningful error *)
+scheme_parse_error = error:() ;
+
+scheme = scheme_quote scheme
+			 | string
+       | scheme_list
+       | scheme_catchall
+       ;
+
+scheme_quote = "'" ;
+
+scheme_list = '(' ( scheme_list_body | () ) ')' ;
+
+scheme_list_body = { scheme } ;
+
+(*
+ * A regular exception that catches everything except for open
+ * parentheses and spaces. For the moment we don't need to
+ * distinguish the various elements.
+ *)
+scheme_catchall = /((?!\(|\)|\s)(.))+/ ;
+
+(*
+ * Nested lilypond blocks
+ *)
+
+lilypond_block = '{' ( lilypond_block_body | () ) '}' ;
+
+lilypond_block_body = { lilypond_block | string | token } ;
+
+
+(*
+ * A regular exception that catches everything except for open
+ * braces and spaces. For the moment we don't need to
+ * distinguish the various elements.
+ *)
+token = /((?!{|}|\s)(.))+/ ;
+
+(*
+ * Strings
+ * ~~~~~~~~~~~~~~~~
+ *
+ *  - Only double quote strings are considered
+ *  - Multi line strings are allowed
+ *)
+
+string = ('"' ~ @:/([^"]|\\"|\\\\)*/ '"') ~ ;
+
+(* Just for reference
+ *
+ * string_no_multiline = ('"' ~ @:/([^"\n]|\\"|\\\\)*/ '"') ~ ;
+ *)
