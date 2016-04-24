@@ -55,10 +55,23 @@ def main():
     console.display("Rendering documentation")
 
     try:
-        out = renderer.render_template(docs, "markdown.")
+        if args.output:
+            template = renderer.template_from_filename(args.output)
+        else:
+            template = "json"
+        out = renderer.render(docs, template)
+    except ValueError as err:
+        logging.error(err)
+        sys.exit(1)
     except TemplateNotFound as err:
         logging.error(
             "Template `{}` not found. Available templates are: {}".format(
-                err.name, renderer.JINJA_ENV.list_templates()))
+                err.name, renderer.list_templates()))
         sys.exit(1)
-    print(out)
+
+    if not args.output:
+        print(out)
+    else:
+        console.display("Writing documentation to", args.output)
+        with open(args.output, "w", encoding="utf-8") as fp:
+            fp.write(out)

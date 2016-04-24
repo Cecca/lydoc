@@ -2,6 +2,7 @@
 
 import json
 import jinja2
+import os
 from itertools import groupby
 
 
@@ -9,8 +10,15 @@ JINJA_ENV = jinja2.Environment(
     loader=jinja2.PackageLoader('lydoc', 'templates'))
 
 
+def list_templates():
+    return JINJA_ENV.list_templates()
+
+
 def _build_templates_map():
     m = {
+        # json is kind of a special value, it does not correspond to a jinja
+        # template. See the function `render` to see how it's used
+        "json": ["json"],
         "markdown.j2": ["md", "markdown", "mdown"]
     }
 
@@ -20,7 +28,17 @@ def _build_templates_map():
             tmap[ext] = template
     return tmap
 
+
 TEMPLATES_MAP = _build_templates_map()
+
+
+def template_from_filename(filename):
+    """Returns the appropriate template name based on the given file name."""
+    ext = filename.split(os.path.extsep)[-1]
+    if not ext in TEMPLATES_MAP:
+        raise ValueError("No template for file extension {}".format(ext))
+    return TEMPLATES_MAP[ext]
+
 
 
 def render_json(docs):
@@ -36,3 +54,10 @@ def render_template(docs, template):
                                trim_blocks=True,
                                lstrip_blocks=True)
     return rendered
+
+
+def render(docs, template):
+    if template == "json":
+        return render_json(docs)
+    else:
+        return render_template(docs, template)
