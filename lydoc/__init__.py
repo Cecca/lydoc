@@ -5,7 +5,6 @@ import argparse
 import sys
 import logging
 import pprint
-import colorama
 from jinja2.exceptions import TemplateNotFound
 
 
@@ -41,19 +40,19 @@ def _cli_argument_parser():
 def main():
     """The main entry point of the program"""
 
-    colorama.init()
-
     # Parse command line arguments
     argp = _cli_argument_parser()
     args = argp.parse_args()
 
     # setup logging
-    logging.basicConfig(level=args.loglevel)
+    logging.basicConfig(
+        level=args.loglevel,
+        format="%(levelname)s %(message)s")
 
-    console.display(console.action("Collecting"), "documentation from files")
+    console.display("Collecting documentation from files")
     docs = collector.parse(args.path, args.trace_parser)
 
-    console.display(console.action("Rendering"), "documentation")
+    console.display("Rendering documentation")
 
     try:
         out = renderer.render_template(docs, "markdown.")

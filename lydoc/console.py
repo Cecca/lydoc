@@ -4,18 +4,6 @@ want the output to standard error: standard output is reserved for data, e.g.
 the json representation of the documentation"""
 
 import sys
-from colorama import Fore, Back, Style
-import logging
-
-
-def action(string):
-    if sys.stderr.isatty():
-        return "{color}{s}{reset}".format(
-            color=Fore.GREEN + Style.BRIGHT,
-            s=string,
-            reset=Style.RESET_ALL)
-    else:
-        return string
 
 
 def display(*args):

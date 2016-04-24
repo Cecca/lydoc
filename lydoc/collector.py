@@ -139,7 +139,7 @@ def parse(target, trace=False, **kwargs):
 
     if os.path.isfile(target):
         if target.endswith(".ily") or target.endswith(".ly"):
-            console.display(console.action("Parsing"), target)
+            console.display("Parsing", target)
             with open(target, "r", encoding="utf-8") as fp:
                 return parse(fp, trace, filename=target)
         else:
