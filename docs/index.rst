@@ -12,34 +12,54 @@ be used to generate documentation for reusable Lilypond libraries.
 
 .. _`GNU Lilypond`: http://lilypond.org/
 
+
 **Contents**:
 
 .. toctree::
    :maxdepth: 2
 
+   user-manual
+
 Installation
 ============
 
-.. todo::
-   Write about the installation process
+From source
+-----------
+
+Lydoc requires python3. To install, run from the root directory of the
+project::
+
+    python3 setup.py install
+
+which will install all the necessary dependencies.
 
 Quick start
 ===========
 
-.. todo::
-   Write about the quick start
+To generate API documentation for a single lilypond file in
+`reStructuredText`_ format::
 
-Usage
-=====
+    lydoc -o api.rst file.ly
 
-.. todo::
-   Link to another page with more information about usage
+or in `Markdown`_::
 
-Developer's guide
-=================
+    lydoc -o api.md file.ly
 
-.. todo::
-   Link to the technical documentation page
+
+You can also generate API documentation for all Lilypond files in a
+given directory, recursively::
+
+    lydoc -o api.rst directory
+
+
+For more detailed usage instructions, head to the :doc:`/user-manual`
+page.
+
+
+.. _reStructuredText: http://www.sphinx-doc.org/en/stable/rest.html
+.. _Markdown: http://daringfireball.net/projects/markdown/
+
+
 
 ..
    Indices and tables
