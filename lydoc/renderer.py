@@ -19,7 +19,8 @@ def _build_templates_map():
         # json is kind of a special value, it does not correspond to a jinja
         # template. See the function `render` to see how it's used
         "json": ["json"],
-        "markdown.j2": ["md", "markdown", "mdown"]
+        "markdown.j2": ["md", "markdown", "mdown"],
+        "restructuredtext.j2": ["rst"]
     }
 
     tmap = dict()
