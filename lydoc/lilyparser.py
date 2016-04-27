@@ -17,7 +17,7 @@ from grako.parsing import graken, Parser
 from grako.util import re, RE_FLAGS, generic_main  # noqa
 
 
-__version__ = (2016, 4, 27, 3, 32, 16, 2)
+__version__ = (2016, 4, 27, 13, 20, 30, 2)
 
 __all__ = [
     'LilyParser',
@@ -186,6 +186,7 @@ class LilyParser(Parser):
     def _embedded_scheme_error_(self):
         pass
         self.name_last_node('error')
+        self._cut()
 
         self.ast._define(
             ['error'],
@@ -362,6 +363,7 @@ def main(
 
     with open(filename) as f:
         text = f.read()
+    whitespace = whitespace or None
     parser = LilyParser(parseinfo=False)
     ast = parser.parse(
         text,

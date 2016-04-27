@@ -115,10 +115,8 @@ class DocumentationSemantics(LilySemantics):
         buf = pinfo.buffer
         fname = buf.filename
         line = buf.line_info(pinfo.pos).line
-        logging.error('Error while parsing scheme. (%s:%s)', fname, line)
         raise FailedSemantics(
-            "Error parsing embedded scheme ({}:{})".format(fname, line))
-
+            "Error parsing embedded scheme (unbalanced parentheses?)")
 
 
 def parse(target, trace=False, **kwargs):

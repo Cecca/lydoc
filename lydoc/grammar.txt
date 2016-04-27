@@ -83,7 +83,7 @@ function_definition =
 
 embedded_scheme = '#' ( scheme | embedded_scheme_error ) ;
 
-embedded_scheme_error = error:() ;
+embedded_scheme_error = error:() ~ ;
 
 scheme = scheme_comment [ scheme ]
        | "'" scheme
