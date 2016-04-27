@@ -1,6 +1,6 @@
 """Lydoc is a simple API documentation generator for lilypond."""
 
-from . import collector, console, renderer
+from . import collector, console, renderer, metrics
 import argparse
 import sys
 import logging
@@ -49,6 +49,8 @@ def main():
         level=args.loglevel,
         format="%(levelname)s %(message)s")
 
+    program_metrics = metrics.Metrics()
+
     console.display("Collecting documentation from files")
     docs = collector.parse(args.path, args.trace_parser)
 
@@ -75,3 +77,5 @@ def main():
         console.display("Writing documentation to", args.output)
         with open(args.output, "w", encoding="utf-8") as fp:
             fp.write(out)
+
+    program_metrics.display()
