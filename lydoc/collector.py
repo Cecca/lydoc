@@ -153,7 +153,7 @@ def parse(target, trace=False, **kwargs):
 
     if os.path.isdir(target):
         docs = []
-        logging.info("Parsing directory {}".target)
+        logging.info("Parsing directory {}", target)
         for root, _, files in os.walk(target):
             for f in files:
                 fname = os.path.join(root, f)
