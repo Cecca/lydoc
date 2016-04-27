@@ -147,7 +147,7 @@ def parse(target, trace=False, **kwargs):
         if target.endswith(".ily") or target.endswith(".ly"):
             console.display("Parsing", target)
             with open(target, "r", encoding="utf-8") as fp:
-                return parse(fp, trace, filename=target)
+                return parse(fp, trace, filename=target, **kwargs)
         else:
             return []
 
@@ -157,11 +157,15 @@ def parse(target, trace=False, **kwargs):
         for root, _, files in os.walk(target):
             for f in files:
                 fname = os.path.join(root, f)
-                file_docs = parse(fname, trace)
+                file_docs = parse(fname, trace, **kwargs)
                 docs.extend(file_docs)
         return docs
 
     # We were given a text, so parse it directly
+    metrics = kwargs.get("metrics", None)
+    if metrics is not None:
+        metrics.record_file(target)
+
     docs = []
     parser = LilyParser(parseinfo=True)
     try:
@@ -171,10 +175,12 @@ def parse(target, trace=False, **kwargs):
                      filename=kwargs.get("filename", None),
                      trace=trace)
     except FailedParse as err:
-        # Do something on error
-        pass
+        logging.warn(err)
+        if metrics is not None:
+            metrics.record_error(err)
     except RuntimeError as err:
-        # Do something on error
-        pass
+        logging.warn(err)
+        if metrics is not None:
+            metrics.record_error(err)
 
     return docs

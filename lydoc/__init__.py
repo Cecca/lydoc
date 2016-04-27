@@ -49,10 +49,11 @@ def main():
         level=args.loglevel,
         format="%(levelname)s %(message)s")
 
-    program_metrics = metrics.Metrics()
-
     console.display("Collecting documentation from files")
-    docs = collector.parse(args.path, args.trace_parser)
+    collector_metrics = metrics.Metrics()
+    docs = collector.parse(args.path, args.trace_parser,
+                           metrics=collector_metrics)
+    collector_metrics.display()
 
     console.display("Rendering documentation")
 
@@ -78,4 +79,3 @@ def main():
         with open(args.output, "w", encoding="utf-8") as fp:
             fp.write(out)
 
-    program_metrics.display()
