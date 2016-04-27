@@ -1,27 +1,31 @@
-
-@@comments :: /(?!%{!)%{(.|\s)*?%}/
-@@eol_comments :: /(?!%{)%.*?$/
-
 lilypond = { toplevel_element } $ ;
 
-toplevel_element = documentable_element
+toplevel_element = lilypond_comment
+                 | documentable_element
                  | embedded_scheme
                  | lilypond_block
                  | token
                  ;
 
-documentable_element = name_definition ;
 
 (*
- * Identifiers
- * ~~~~~~~~~~~
- * This regular expression matches valid LilyPond identifiers. However,
- * it does not represent all valid scheme symbol names. As of now (20/04/2016)
- * this is not necessary. Maybe in the future it may be necessary to introduce
- * a `scheme_symbol` rule.
+ * Plain comments
+ * ~~~~~~~~~~~~~~
+ *
+ * We don't use grako's built-in comment processing capabilities because
+ * Lilypond and Scheme have a different comment syntax, and they can be mixed
+ * in the same file. Therefore it's simpler to have comments handled
+ * explicitly in the grammar.
  *)
 
-identifier = /(?<![^\W\d])[^\W\d_]+([_-][^\W\d_]+)*(?![_-]?[^\W\d])/ ;
+lilypond_comment = { eol_comment }+
+                 | block_comment
+                 ;
+
+eol_comment = /(?!%{)%.*?$/ ;
+
+block_comment = /(?!%{!)%{(.|\s)*?%}/ ; 
+
 
 (*
  * Documentation comments
@@ -34,11 +38,43 @@ identifier = /(?<![^\W\d])[^\W\d_]+([_-][^\W\d_]+)*(?![_-]?[^\W\d])/ ;
  *)
 doc_comment = ('%{!' ~ @:/((?!%})(.|\s))*/ /%}/) ~ ;
 
+
+(*
+ * Identifiers
+ * ~~~~~~~~~~~
+ * This regular expression matches valid LilyPond identifiers. However,
+ * it does not represent all valid scheme symbol names. As of now (20/04/2016)
+ * this is not necessary. Maybe in the future it may be necessary to introduce
+ * a `scheme_symbol` rule.
+ *)
+
+identifier = /(?<![^\W\d])[^\W\d_]+([_-][^\W\d_]+)*(?![_-]?[^\W\d])/ ;
+
+
+(*
+ * Documentable elements
+ * ~~~~~~~~~~~~~~~~~~~~~
+ *)
+
+documentable_element = function_definition
+                     | name_definition
+                     ;
+
+
 name_definition =
-                  documentation:[doc_comment]
-                  name:identifier
-                  '='
-                ;
+  documentation:[doc_comment]
+  name:identifier '=' ;
+
+
+function_definition =
+  documentation:[doc_comment]
+  name:identifier '='
+  '#' '(' 'define-' functionType:/(music|void|scheme)/ '-function'
+  '(' [ 'parser' 'location' ] parameters:{ scheme_token } ')'
+  '(' parameterTypes:{ scheme_token } ')'
+   { scheme } ')' ;
+
+
 
 (*
  * Scheme code
@@ -71,14 +107,13 @@ scheme_comment = { scheme_comment_line }+ ;
 scheme_comment_line = /;.*$/ ;
 
 
-
 (*
  * Nested lilypond blocks
  *)
 
 lilypond_block = '{' ( lilypond_block_body | () ) '}' ;
 
-lilypond_block_body = { lilypond_block | string | token } ;
+lilypond_block_body = { lilypond_comment | lilypond_block | string | token } ;
 
 
 (*

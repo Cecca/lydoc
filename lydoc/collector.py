@@ -72,6 +72,25 @@ class DocumentationSemantics(LilySemantics):
         ast['file'] = buffer.filename
         ast['line'] = buffer.line_info(pinfo.pos).line
 
+    def function_definition(self, ast):
+        logging.debug("Found function definition %s", ast.name)
+        self.add_position_info(ast)
+        # Convert the AST to a simple dict, so that the grako buffer
+        # associated with the parseinfo can be released when it is no
+        # longer needed. Otherwise, the buffer is kept in memory
+        # until the reference to this AST is kept in memory. When
+        # dealing with many files this can lead to an excessive
+        # memory usage.
+        ast = dict(ast)
+        ast['type'] = 'function'
+        # Strip the comment character from the beginning of the line
+        docs = ast['documentation']
+        if docs is not None:
+            stripped = strip_leading_comments(docs)
+            ast['documentation'] = stripped
+        self.collected_elements.append(ast)
+        return ast
+
     def name_definition(self, ast):
         logging.debug('Found name definition %s', ast.name)
         self.add_position_info(ast)

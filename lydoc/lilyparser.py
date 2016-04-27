@@ -17,7 +17,7 @@ from grako.parsing import graken, Parser
 from grako.util import re, RE_FLAGS, generic_main  # noqa
 
 
-__version__ = (2016, 4, 27, 0, 56, 22, 2)
+__version__ = (2016, 4, 27, 3, 32, 16, 2)
 
 __all__ = [
     'LilyParser',
@@ -32,8 +32,8 @@ class LilyParser(Parser):
     def __init__(self,
                  whitespace=None,
                  nameguard=None,
-                 comments_re='(?!%{!)%{(.|\\s)*?%}',
-                 eol_comments_re='(?!%{)%.*?$',
+                 comments_re=None,
+                 eol_comments_re=None,
                  ignorecase=None,
                  left_recursion=True,
                  keywords=KEYWORDS,
@@ -61,6 +61,8 @@ class LilyParser(Parser):
     def _toplevel_element_(self):
         with self._choice():
             with self._option():
+                self._lilypond_comment_()
+            with self._option():
                 self._documentable_element_()
             with self._option():
                 self._embedded_scheme_()
@@ -71,12 +73,24 @@ class LilyParser(Parser):
             self._error('no available options')
 
     @graken()
-    def _documentable_element_(self):
-        self._name_definition_()
+    def _lilypond_comment_(self):
+        with self._choice():
+            with self._option():
+
+                def block0():
+                    self._eol_comment_()
+                self._positive_closure(block0)
+            with self._option():
+                self._block_comment_()
+            self._error('no available options')
 
     @graken()
-    def _identifier_(self):
-        self._pattern(r'(?<![^\W\d])[^\W\d_]+([_-][^\W\d_]+)*(?![_-]?[^\W\d])')
+    def _eol_comment_(self):
+        self._pattern(r'(?!%{)%.*?$')
+
+    @graken()
+    def _block_comment_(self):
+        self._pattern(r'(?!%{!)%{(.|\s)*?%}')
 
     @graken()
     def _doc_comment_(self):
@@ -89,6 +103,19 @@ class LilyParser(Parser):
         self._cut()
 
     @graken()
+    def _identifier_(self):
+        self._pattern(r'(?<![^\W\d])[^\W\d_]+([_-][^\W\d_]+)*(?![_-]?[^\W\d])')
+
+    @graken()
+    def _documentable_element_(self):
+        with self._choice():
+            with self._option():
+                self._function_definition_()
+            with self._option():
+                self._name_definition_()
+            self._error('no available options')
+
+    @graken()
     def _name_definition_(self):
         with self._optional():
             self._doc_comment_()
@@ -99,6 +126,48 @@ class LilyParser(Parser):
 
         self.ast._define(
             ['documentation', 'name'],
+            []
+        )
+
+    @graken()
+    def _function_definition_(self):
+        with self._optional():
+            self._doc_comment_()
+        self.name_last_node('documentation')
+        self._identifier_()
+        self.name_last_node('name')
+        self._token('=')
+        self._token('#')
+        self._token('(')
+        self._token('define-')
+        self._pattern(r'(music|void|scheme)')
+        self.name_last_node('functionType')
+        self._token('-function')
+        self._token('(')
+        with self._optional():
+            self._token('parser')
+            self._token('location')
+
+        def block4():
+            self._scheme_token_()
+        self._closure(block4)
+        self.name_last_node('parameters')
+        self._token(')')
+        self._token('(')
+
+        def block6():
+            self._scheme_token_()
+        self._closure(block6)
+        self.name_last_node('parameterTypes')
+        self._token(')')
+
+        def block7():
+            self._scheme_()
+        self._closure(block7)
+        self._token(')')
+
+        self.ast._define(
+            ['documentation', 'name', 'functionType', 'parameters', 'parameterTypes'],
             []
         )
 
@@ -189,6 +258,8 @@ class LilyParser(Parser):
         def block0():
             with self._choice():
                 with self._option():
+                    self._lilypond_comment_()
+                with self._option():
                     self._lilypond_block_()
                 with self._option():
                     self._string_()
@@ -219,16 +290,28 @@ class LilySemantics(object):
     def toplevel_element(self, ast):
         return ast
 
-    def documentable_element(self, ast):
+    def lilypond_comment(self, ast):
         return ast
 
-    def identifier(self, ast):
+    def eol_comment(self, ast):
+        return ast
+
+    def block_comment(self, ast):
         return ast
 
     def doc_comment(self, ast):
         return ast
 
+    def identifier(self, ast):
+        return ast
+
+    def documentable_element(self, ast):
+        return ast
+
     def name_definition(self, ast):
+        return ast
+
+    def function_definition(self, ast):
         return ast
 
     def embedded_scheme(self, ast):
@@ -271,8 +354,8 @@ def main(
         trace=False,
         whitespace=None,
         nameguard=None,
-        comments_re='(?!%{!)%{(.|\\s)*?%}',
-        eol_comments_re='(?!%{)%.*?$',
+        comments_re=None,
+        eol_comments_re=None,
         ignorecase=None,
         left_recursion=True,
         **kwargs):
