@@ -8,7 +8,11 @@ API
 File ``{{ ly_file }}``
 ==================
 {% for doc in documentation[ly_file] %}
+{% if doc['type'] == 'name' %}
 .. attribute:: {{ doc['name'] }}
+{% elif doc['type'] == 'function'  %}
+.. function:: {{ doc['name'] }}({{ doc['parameters'] | join(', ') }})
+{% endif %}
 {% if doc['documentation'] is not none %}
 {{ doc['documentation'] }}
 {% else %}
