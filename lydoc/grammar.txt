@@ -45,33 +45,32 @@ name_definition =
  * ~~~~~~~~~~~
  *)
 
-embedded_scheme = '#' ( embedded_scheme_pre @:scheme embedded_scheme_post | scheme_parse_error ) ;
+embedded_scheme = '#' ( scheme | embedded_scheme_error ) ;
 
-embedded_scheme_pre = pre:() ;
+embedded_scheme_error = error:() ;
 
-embedded_scheme_post = post:() ;
-
-(* Gives a hook to throw a meaningful error *)
-scheme_parse_error = error:() ;
-
-scheme = scheme_quote scheme
-			 | string
+scheme = scheme_comment [ scheme ]
+       | "'" scheme
+       | string
+       | scheme_token
        | scheme_list
-       | scheme_catchall
        ;
 
-scheme_quote = "'" ;
+scheme_list = '(' list:{ scheme } ')' ;
 
-scheme_list = '(' ( scheme_list_body | () ) ')' ;
-
-scheme_list_body = { scheme } ;
 
 (*
  * A regular exception that catches everything except for open
  * parentheses and spaces. For the moment we don't need to
  * distinguish the various elements.
  *)
-scheme_catchall = /((?!\(|\)|\s)(.))+/ ;
+scheme_token = /((?!\(|\)|\s)(.))+/ ;
+
+scheme_comment = { scheme_comment_line }+ ;
+
+scheme_comment_line = /;.*$/ ;
+
+
 
 (*
  * Nested lilypond blocks

@@ -14,16 +14,18 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 from grako.parsing import graken, Parser
-from grako.util import re, RE_FLAGS
+from grako.util import re, RE_FLAGS, generic_main  # noqa
 
 
-__version__ = (2016, 4, 22, 2, 2, 56, 4)
+__version__ = (2016, 4, 27, 0, 56, 22, 2)
 
 __all__ = [
     'LilyParser',
     'LilySemantics',
     'main'
 ]
+
+KEYWORDS = set([])
 
 
 class LilyParser(Parser):
@@ -34,6 +36,7 @@ class LilyParser(Parser):
                  eol_comments_re='(?!%{)%.*?$',
                  ignorecase=None,
                  left_recursion=True,
+                 keywords=KEYWORDS,
                  **kwargs):
         super(LilyParser, self).__init__(
             whitespace=whitespace,
@@ -42,6 +45,7 @@ class LilyParser(Parser):
             eol_comments_re=eol_comments_re,
             ignorecase=ignorecase,
             left_recursion=left_recursion,
+            keywords=keywords,
             **kwargs
         )
 
@@ -80,7 +84,7 @@ class LilyParser(Parser):
             self._token('%{!')
             self._cut()
             self._pattern(r'((?!%})(.|\s))*')
-            self.ast['@'] = self.last_node
+            self.name_last_node('@')
             self._pattern(r'%}')
         self._cut()
 
@@ -88,9 +92,9 @@ class LilyParser(Parser):
     def _name_definition_(self):
         with self._optional():
             self._doc_comment_()
-        self.ast['documentation'] = self.last_node
+        self.name_last_node('documentation')
         self._identifier_()
-        self.ast['name'] = self.last_node
+        self.name_last_node('name')
         self._token('=')
 
         self.ast._define(
@@ -104,38 +108,15 @@ class LilyParser(Parser):
         with self._group():
             with self._choice():
                 with self._option():
-                    self._embedded_scheme_pre_()
                     self._scheme_()
-                    self.ast['@'] = self.last_node
-                    self._embedded_scheme_post_()
                 with self._option():
-                    self._scheme_parse_error_()
+                    self._embedded_scheme_error_()
                 self._error('no available options')
 
     @graken()
-    def _embedded_scheme_pre_(self):
+    def _embedded_scheme_error_(self):
         pass
-        self.ast['pre'] = self.last_node
-
-        self.ast._define(
-            ['pre'],
-            []
-        )
-
-    @graken()
-    def _embedded_scheme_post_(self):
-        pass
-        self.ast['post'] = self.last_node
-
-        self.ast._define(
-            ['post'],
-            []
-        )
-
-    @graken()
-    def _scheme_parse_error_(self):
-        pass
-        self.ast['error'] = self.last_node
+        self.name_last_node('error')
 
         self.ast._define(
             ['error'],
@@ -146,42 +127,49 @@ class LilyParser(Parser):
     def _scheme_(self):
         with self._choice():
             with self._option():
-                self._scheme_quote_()
+                self._scheme_comment_()
+                with self._optional():
+                    self._scheme_()
+            with self._option():
+                self._token("'")
                 self._scheme_()
             with self._option():
                 self._string_()
             with self._option():
-                self._scheme_list_()
+                self._scheme_token_()
             with self._option():
-                self._scheme_catchall_()
+                self._scheme_list_()
             self._error('no available options')
-
-    @graken()
-    def _scheme_quote_(self):
-        self._token("'")
 
     @graken()
     def _scheme_list_(self):
         self._token('(')
-        with self._group():
-            with self._choice():
-                with self._option():
-                    self._scheme_list_body_()
-                with self._option():
-                    pass
-                self._error('no available options')
+
+        def block1():
+            self._scheme_()
+        self._closure(block1)
+        self.name_last_node('list')
         self._token(')')
 
+        self.ast._define(
+            ['list'],
+            []
+        )
+
     @graken()
-    def _scheme_list_body_(self):
+    def _scheme_token_(self):
+        self._pattern(r'((?!\(|\)|\s)(.))+')
+
+    @graken()
+    def _scheme_comment_(self):
 
         def block0():
-            self._scheme_()
-        self._closure(block0)
+            self._scheme_comment_line_()
+        self._positive_closure(block0)
 
     @graken()
-    def _scheme_catchall_(self):
-        self._pattern(r'((?!\(|\)|\s)(.))+')
+    def _scheme_comment_line_(self):
+        self._pattern(r';.*$')
 
     @graken()
     def _lilypond_block_(self):
@@ -219,7 +207,7 @@ class LilyParser(Parser):
             self._token('"')
             self._cut()
             self._pattern(r'([^"]|\\"|\\\\)*')
-            self.ast['@'] = self.last_node
+            self.name_last_node('@')
             self._token('"')
         self._cut()
 
@@ -246,28 +234,22 @@ class LilySemantics(object):
     def embedded_scheme(self, ast):
         return ast
 
-    def embedded_scheme_pre(self, ast):
-        return ast
-
-    def embedded_scheme_post(self, ast):
-        return ast
-
-    def scheme_parse_error(self, ast):
+    def embedded_scheme_error(self, ast):
         return ast
 
     def scheme(self, ast):
         return ast
 
-    def scheme_quote(self, ast):
-        return ast
-
     def scheme_list(self, ast):
         return ast
 
-    def scheme_list_body(self, ast):
+    def scheme_token(self, ast):
         return ast
 
-    def scheme_catchall(self, ast):
+    def scheme_comment(self, ast):
+        return ast
+
+    def scheme_comment_line(self, ast):
         return ast
 
     def lilypond_block(self, ast):
@@ -283,8 +265,18 @@ class LilySemantics(object):
         return ast
 
 
-def main(filename, startrule, trace=False, whitespace=None, nameguard=None):
-    import json
+def main(
+        filename,
+        startrule,
+        trace=False,
+        whitespace=None,
+        nameguard=None,
+        comments_re='(?!%{!)%{(.|\\s)*?%}',
+        eol_comments_re='(?!%{)%.*?$',
+        ignorecase=None,
+        left_recursion=True,
+        **kwargs):
+
     with open(filename) as f:
         text = f.read()
     parser = LilyParser(parseinfo=False)
@@ -294,46 +286,17 @@ def main(filename, startrule, trace=False, whitespace=None, nameguard=None):
         filename=filename,
         trace=trace,
         whitespace=whitespace,
-        nameguard=nameguard)
+        nameguard=nameguard,
+        ignorecase=ignorecase,
+        **kwargs)
+    return ast
+
+if __name__ == '__main__':
+    import json
+    ast = generic_main(main, LilyParser, name='Lily')
     print('AST:')
     print(ast)
     print()
     print('JSON:')
     print(json.dumps(ast, indent=2))
     print()
-
-if __name__ == '__main__':
-    import argparse
-    import string
-    import sys
-
-    class ListRules(argparse.Action):
-        def __call__(self, parser, namespace, values, option_string):
-            print('Rules:')
-            for r in LilyParser.rule_list():
-                print(r)
-            print()
-            sys.exit(0)
-
-    parser = argparse.ArgumentParser(description="Simple parser for Lily.")
-    parser.add_argument('-l', '--list', action=ListRules, nargs=0,
-                        help="list all rules and exit")
-    parser.add_argument('-n', '--no-nameguard', action='store_true',
-                        dest='no_nameguard',
-                        help="disable the 'nameguard' feature")
-    parser.add_argument('-t', '--trace', action='store_true',
-                        help="output trace information")
-    parser.add_argument('-w', '--whitespace', type=str, default=string.whitespace,
-                        help="whitespace specification")
-    parser.add_argument('file', metavar="FILE", help="the input file to parse")
-    parser.add_argument('startrule', metavar="STARTRULE",
-                        help="the start rule for parsing")
-    args = parser.parse_args()
-
-    main(
-        args.file,
-        args.startrule,
-        trace=args.trace,
-        whitespace=args.whitespace,
-        nameguard=not args.no_nameguard
-    )

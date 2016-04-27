@@ -39,3 +39,9 @@ dist/lydoc.exe: *.py
 ## See scripts/bumpversion.sh
 bumpversion:
 	scripts/bumpversion.sh
+
+
+.PHONY: test
+## Run the tests
+test: parser
+	nosetests

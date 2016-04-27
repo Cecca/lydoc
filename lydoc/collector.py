@@ -72,19 +72,6 @@ class DocumentationSemantics(LilySemantics):
         ast['file'] = buffer.filename
         ast['line'] = buffer.line_info(pinfo.pos).line
 
-    def embedded_scheme_pre(self, ast):
-        """This semantic action changes the comment character before starting
-        to parse scheme code.
-        """
-        self.old_eol_comments_re = ast.parseinfo.buffer.eol_comments_re
-        ast.parseinfo.buffer.eol_comments_re = ";.*$"
-        return ast
-
-    def embedded_scheme_post(self, ast):
-        """Undo the changes done by the function embedded_scheme_pre"""
-        ast.parseinfo.buffer.eol_comments_re = self.old_eol_comments_re
-        return ast
-
     def name_definition(self, ast):
         logging.debug('Found name definition %s', ast.name)
         self.add_position_info(ast)
@@ -104,14 +91,14 @@ class DocumentationSemantics(LilySemantics):
         self.collected_elements.append(ast)
         return ast
 
-    def scheme_parse_error(self, ast):
+    def embedded_scheme_error(self, ast):
         pinfo = ast.parseinfo
-        buffer = pinfo.buffer
-        file = buffer.filename
-        line = buffer.line_info(pinfo.pos).line
-        logging.error('Error while parsing scheme. (%s:%s)', file, line)
+        buf = pinfo.buffer
+        fname = buf.filename
+        line = buf.line_info(pinfo.pos).line
+        logging.error('Error while parsing scheme. (%s:%s)', fname, line)
         raise FailedSemantics(
-            'Error parsing embedded scheme. Unbalanced parentheses?')
+            "Error parsing embedded scheme ({}:{})".format(fname, line))
 
 
 
