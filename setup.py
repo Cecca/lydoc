@@ -1,10 +1,12 @@
 from setuptools import setup, find_packages
+import io
+
 
 version = dict()
-with open("lydoc/_version.py", "r") as fp:
+with io.open("lydoc/_version.py", "r", encoding='utf-8') as fp:
     exec(fp.read(), version)
 
-with open("README.md", "r", encoding='utf-8') as fp:
+with io.open("README.md", "r", encoding='utf-8') as fp:
     long_desc = fp.read()
 
 setup(

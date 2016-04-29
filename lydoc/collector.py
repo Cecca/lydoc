@@ -1,9 +1,14 @@
 """The collector module provides utilities to collect documentation elements
 from Lilypond files and directories."""
 
+# For Python 2/3 compatibility
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+
 from lydoc.lilyparser import LilyParser, LilySemantics
 from . import console
 import re
+import io
 import os
 from grako.exceptions import FailedParse, FailedSemantics
 import logging
@@ -144,7 +149,7 @@ def parse(target, trace=False, **kwargs):
     if os.path.isfile(target):
         if target.endswith(".ily") or target.endswith(".ly"):
             console.display("Parsing", target)
-            with open(target, "r", encoding="utf-8") as fp:
+            with io.open(target, "r", encoding="utf-8") as fp:
                 return parse(fp, trace, filename=target, **kwargs)
         else:
             return []

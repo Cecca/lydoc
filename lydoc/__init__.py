@@ -1,10 +1,15 @@
 """Lydoc is a simple API documentation generator for lilypond."""
 
+# For Python 2/3 compatibility
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+
 from . import collector, console, renderer, metrics
 import argparse
 import sys
 import logging
 import pprint
+import io
 from jinja2.exceptions import TemplateNotFound
 
 
@@ -76,6 +81,6 @@ def main():
         print(out)
     else:
         console.display("Writing documentation to", args.output)
-        with open(args.output, "w", encoding="utf-8") as fp:
+        with io.open(args.output, "w", encoding="utf-8") as fp:
             fp.write(out)
 
