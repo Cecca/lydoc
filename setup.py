@@ -6,7 +6,7 @@ version = dict()
 with io.open("lydoc/_version.py", "r", encoding='utf-8') as fp:
     exec(fp.read(), version)
 
-with io.open("README.md", "r", encoding='utf-8') as fp:
+with io.open("README.rst", "r", encoding='utf-8') as fp:
     long_desc = fp.read()
 
 setup(
@@ -15,7 +15,7 @@ setup(
     author='Matteo Ceccarello',
     author_email='matteo.ceccarello@gmail.com',
     license='GPLv3',
-    url='TODO',
+    url='https://github.com/Cecca/lydoc',
     description='An API documentation generator for Lilypond files',
     long_description=long_desc,
     packages=find_packages(exclude=['docs', 'tests*']),
