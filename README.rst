@@ -1,7 +1,7 @@
 Lydoc - A Lilypond API documentation generator
 ##############################################
 
-.. image:: https://img.shields.io/pypi/v/lydoc.svg?maxAge=2592000   
+.. image:: https://img.shields.io/pypi/v/lydoc.svg?maxAge=86400   
    :target: https://pypi.python.org/pypi/lydoc
    :alt: PyPI Package
 .. image:: http://readthedocs.org/projects/lydoc/badge/?version=latest
@@ -110,17 +110,6 @@ language. You have some options:
   documentation generator::
 
     lydoc -o api.rst file.ly
-
-
-To generate API documentation for a single lilypond file in
-`reStructuredText`_ format::
-
-    lydoc -o api.rst file.ly
-
-or in `Markdown`_::
-
-    lydoc -o api.md file.ly
-
 
 For more detailed usage instructions, head to the :doc:`/user-manual`
 page.
