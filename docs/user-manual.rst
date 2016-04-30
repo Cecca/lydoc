@@ -7,6 +7,10 @@ User Manual
 .. toctree::
    :maxdepth: 2
 
+This page describes how to use Lydoc, starting from how elements in
+Lilypond files should be documented, to how to integrate Lydoc with
+`Sphinx`_.
+
 
 Documentation syntax
 ====================
@@ -32,7 +36,7 @@ comment::
   %}
   someCoolFunction =
   #(define-music-function
-    (parser location music?) (mus)
+    (parser location ly:music?) (mus)
       ...)
 
 The text formatting inside the documentation comment is free, there
@@ -68,7 +72,43 @@ will be read like::
     - with lists
     - indented
     - with leading `%` characters
+
+Therefore, you are free to use whatever markup language you like in
+your comments: it depends on how you render your project's
+documentation (see for instance, :ref:`sphinx-tutorial`).
+
       
+What can be documented
+======================
+
+As of now, Lydoc looks for documentation comments before top-level
+*name definitions*, that is, identifiers followed by an ``=``
+character. Therefore, all the following elements can be documented::
+
+  %{!
+  % You can document plain variables.
+  %}
+  someString = "hello there!"
+
+  %{!
+  % No matter what you assign to them
+  %}
+  yourMusic = \relative c' {
+    c e g c, |
+  }
+
+  %{!
+  % Most importantly, you can document functions.
+  %}
+  myFunction =
+  #(define-void-function
+    (parser location string?) (param)
+    ...)
+
+In the case of functions, Lydoc will collect, along with the
+documentation, also the parameters and their types.
+
+
 
 Command line interface
 ======================
@@ -76,6 +116,7 @@ Command line interface
 .. todo::
    write about the command line interface
 
+.. _sphinx-tutorial:
 
 Using Lydoc with Sphinx
 =======================
@@ -87,9 +128,10 @@ use Lydoc along with Sphinx.
 Sphinx is on the Python Package Index, so you just need to issue the
 following command::
 
-  pip instlal sphinx
+  pip install sphinx
 
-which install the ``sphinx`` command line tools.
+which install the ``sphinx`` command line tools. If you are on Linux,
+Sphinx is likely to be in your distribution's repository, too.
 
 Then, you can use the ``sphinx-quickstart`` program to create a stub
 for your documentation in the ``docs`` directory::
@@ -102,10 +144,10 @@ Once you have generated the stub for the documentation of your
 project, you can use Lydoc to extract the API documentation from your
 Lilypond library::
 
-  lydoc -o docs/api.rst .
+  lydoc -o docs/api.rst /path/to/your/lilypond/library
 
-The above command reads all the lilypond files in the current
-directory (recursively) and outputs the API documentation in the
+The above command reads all the lilypond files in the given directory
+(recursively) and outputs the API documentation in the
 ``docs/api.rst`` reStructuredText file.
 
 At this point, it only remains to include ``docs/api.rst`` into your
@@ -121,5 +163,10 @@ documentation by modifying ``docs/index.rst`` as follows
      :maxdepth: 2
 
      api
+
+Now you are ready to run the ``make html`` command, and enjoy the API
+documentation for your project by opening the
+``_build/html/index.html`` file.
+               
 
 .. _Sphinx: http://www.sphinx-doc.org/en/stable/index.html
