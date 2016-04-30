@@ -19,6 +19,7 @@ setup(
     description='An API documentation generator for Lilypond files',
     long_description=long_desc,
     packages=find_packages(exclude=['docs', 'tests*']),
+    include_package_data=True,
     install_requires=[
         'jinja2',
         'grako'
