@@ -1,6 +1,16 @@
 Lydoc - A Lilypond API documentation generator
 ##############################################
 
+.. image:: https://img.shields.io/pypi/v/lydoc.svg?maxAge=2592000   
+   :target: https://pypi.python.org/pypi/lydoc
+   :alt: PyPI Package
+.. image:: http://readthedocs.org/projects/lydoc/badge/?version=latest
+   :target: http://lydoc.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+.. image:: https://travis-ci.org/Cecca/lydoc.svg?branch=master
+   :target: https://travis-ci.org/Cecca/lydoc
+   :alt: Continuous Integration
+
 ..
    The marker below is used to tell Sphinx where to start
    to include the README file into the main documentation
